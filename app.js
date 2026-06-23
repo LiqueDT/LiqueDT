@@ -30,6 +30,8 @@ const tickerDefinitions = [
 let activeSymbol = "OANDA:XAUUSD";
 let latestRefresh = null;
 let latestMarketPulse = null;
+let latestMarketItems = [];
+let tickerResizeTimer = null;
 let latestNewsPulse = null;
 let latestCalendar = null;
 let latestStaticBuild = null;
@@ -265,16 +267,19 @@ function tickerPercent(value) {
 }
 
 function renderTicker(items = []) {
+  latestMarketItems = items;
   const byId = new Map(items.map(item => [item.id, item]));
-  const cards = tickerDefinitions.map(definition => {
+  const cardWidth = window.matchMedia("(max-width: 560px)").matches ? 158 : 196;
+  const repeats = Math.max(2, Math.ceil((window.innerWidth * 1.15) / (tickerDefinitions.length * cardWidth)));
+  const sequence = Array.from({ length: repeats }, () => tickerDefinitions).flat();
+  const cards = sequence.map(definition => {
     const item = byId.get(definition.id) || {};
     const change = Number(item.change_percent);
     const direction = Number.isFinite(change) ? (change > 0 ? "up" : change < 0 ? "down" : "flat") : "waiting";
     const price = Number.isFinite(Number(item.price)) ? tickerNumber(item.price) : definition.fallback;
-    const label = item.name || definition.label;
     return `<article class="ticker-card ${direction}">
       <span class="ticker-dot" aria-hidden="true"></span>
-      <span class="ticker-name">${escapeHtml(label)}</span>
+      <span class="ticker-name">${escapeHtml(definition.label)}</span>
       <span class="ticker-value"><strong class="ticker-price">${escapeHtml(price)}</strong><span class="ticker-change">${escapeHtml(tickerPercent(item.change_percent))}</span></span>
     </article>`;
   }).join("");
@@ -525,6 +530,7 @@ function goldEffect(item) {
 
 function renderMarket(payload) {
   if (!payload.ok || !payload.items?.length || !payload.pulse) {
+    latestMarketItems = [];
     renderTicker();
     latestMarketPulse = null;
     setHealth("market", "offline", "No data");
@@ -568,7 +574,7 @@ function renderMarket(payload) {
     }
     const read = sentiment(item.gold_score);
     metric.className = `driver-market-read ${read.key}`;
-    metric.innerHTML = `<strong>${escapeHtml(formatMarketValue(item))} ? Gold effect: ${escapeHtml(goldEffect(item))}</strong><br><small>${escapeHtml(correlationSummary(item))}</small>${item.proxy_note ? `<br><small>${escapeHtml(item.proxy_note)}</small>` : ""}`;
+    metric.innerHTML = `<span class="driver-value">${escapeHtml(formatMarketValue(item))}</span><span class="driver-effect">Gold effect: ${escapeHtml(goldEffect(item))}</span><span class="driver-correlation">${escapeHtml(correlationSummary(item))}</span>${item.proxy_note ? `<span class="driver-proxy">Proxy: backend uses XAUT-USD; chart remains BINANCE:XAUUSDT.P.</span>` : ""}`;
   });
   renderTotalPulse();
   return true;
@@ -803,6 +809,10 @@ function bindEvents() {
   }));
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && latestRefresh && Date.now() - latestRefresh > 300000) refreshData();
+  });
+  window.addEventListener("resize", () => {
+    clearTimeout(tickerResizeTimer);
+    tickerResizeTimer = setTimeout(() => renderTicker(latestMarketItems), 160);
   });
 }
 
