@@ -255,7 +255,7 @@ function mountTicker() {
   ];
   const config = {
     symbols: mobile ? symbols.slice(0, 4) : symbols,
-    showSymbolLogo: true, isTransparent: true, displayMode: mobile ? "regular" : "adaptive", colorTheme: "dark", locale: "en"
+    showSymbolLogo: true, isTransparent: true, displayMode: "regular", colorTheme: "dark", locale: "en"
   };
   mountWidget($("#tickerWidget"), "embed-widget-ticker-tape.js", config);
   if (mobile) $("#tickerWidgetClone").replaceChildren();
@@ -463,6 +463,29 @@ function formatMarketValue(item) {
   return `${price.toLocaleString("en-US", { maximumFractionDigits: decimals })} · ${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
 }
 
+function formatCorrelation(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? `${number >= 0 ? "+" : ""}${number.toFixed(2)}` : "n/a";
+}
+
+function correlationSummary(item) {
+  if (item.id === "XAUUSD") return "Primary gold momentum anchor";
+  const strength = item.correlation_strength || "unavailable";
+  const label = item.correlation_label || "correlation unavailable";
+  return `${strength} ${label} · 60D ${formatCorrelation(item.correlation_60)} / 20D ${formatCorrelation(item.correlation_20)}`;
+}
+
+function newsImpactLabel(item) {
+  return `est. ${item.impact || "mixed"}`;
+}
+
+function newsEstimateLine(item) {
+  const confidence = item.confidence_label || "low";
+  const reason = item.impact_reason || "headline language";
+  const method = item.verified_article ? "article verified" : "headline estimate";
+  return `Estimated impact · ${confidence} confidence · ${reason} · ${method}`;
+}
+
 function goldEffect(item) {
   const read = sentiment(item.gold_score);
   if (item.id === "WTI") {
@@ -470,6 +493,7 @@ function goldEffect(item) {
     if (read.key === "bearish") return "Disinflationary pressure";
     return "Indirect / balanced";
   }
+  if (item.id === "XAUUSDT" && item.data_proxy) return `${read.label} proxy read`;
   return read.label;
 }
 
@@ -516,7 +540,9 @@ function renderMarket(payload) {
     }
     const read = sentiment(item.gold_score);
     metric.className = `driver-market-read ${read.key}`;
+    metric.innerHTML = `<strong>${escapeHtml(formatMarketValue(item))} · Gold effect: ${escapeHtml(goldEffect(item))}</strong><small>${escapeHtml(correlationSummary(item))}</small>${item.proxy_note ? `<small>${escapeHtml(item.proxy_note)}</small>` : ""}`;
     metric.textContent = `${formatMarketValue(item)} · Gold effect: ${goldEffect(item)}`;
+    metric.innerHTML = `<strong>${escapeHtml(formatMarketValue(item))} · Gold effect: ${escapeHtml(goldEffect(item))}</strong><small>${escapeHtml(correlationSummary(item))}</small>${item.proxy_note ? `<small>${escapeHtml(item.proxy_note)}</small>` : ""}`;
   });
   renderTotalPulse();
   return true;
@@ -660,6 +686,11 @@ function renderNews(payload) {
   $("#newsList").innerHTML = payload.items.slice(0, 18).map(item => `<a class="news-item" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">
     <span class="news-effect ${escapeHtml(item.impact)}">${escapeHtml(item.impact || "mixed")}</span>
     <span class="news-copy"><h3>${escapeHtml(item.title)}</h3><p><span>${escapeHtml(item.source || "FXStreet")}</span><span>·</span><span>${escapeHtml(relativeTime(item.published))}</span></p></span>
+  </a>`).join("");
+  $("#newsFreshnessNote").textContent = `${freshness.footer} · impact is estimated from headline text, not full-article verification`;
+  $("#newsList").innerHTML = payload.items.slice(0, 18).map(item => `<a class="news-item" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">
+    <span class="news-effect ${escapeHtml(item.impact)}"><small>EST.</small>${escapeHtml(item.impact || "mixed")}</span>
+    <span class="news-copy"><h3>${escapeHtml(item.title)}</h3><p><span>${escapeHtml(item.source || "FXStreet")}</span><span>·</span><span>${escapeHtml(relativeTime(item.published))}</span></p><p class="news-estimate">${escapeHtml(newsEstimateLine(item))}</p></span>
   </a>`).join("");
   renderPulse(payload.pulse, backup, freshness);
   return true;

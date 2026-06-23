@@ -28,7 +28,7 @@ service-worker.js
 styles.css
 ```
 
-The `.github` folder is essential. It tells GitHub how to preserve the last successful data, refresh the public snapshots every five minutes, and deploy the site.
+The `.github` folder is essential. It tells GitHub how to preserve the last successful data, refresh the public snapshots every five minutes, and deploy the site. The schedule is offset to `:02, :07, :12...` because GitHub's scheduled queue is often busiest at exact 5-minute boundaries.
 
 ## Method A: GitHub website
 
@@ -61,7 +61,7 @@ The `.github` folder is essential. It tells GitHub how to preserve the last succ
 2. Open **Actions → Deploy LiqueDT to GitHub Pages** and confirm the latest run has a green check mark.
 3. If no run exists, choose **Run workflow → main → Run workflow**.
 4. Confirm that `.github/workflows/pages.yml`, `tools/build_static_data.py`, `requirements-pages.txt`, and `server.py` exist in the repository.
-5. After the green deployment completes, refresh Safari. If LiqueDT was added to the Home Screen, fully close it and reopen it once so version 1.9 replaces the old cached shell.
+5. After the green deployment completes, refresh Safari. If LiqueDT was added to the Home Screen, fully close it and reopen it once so version 1.11 replaces the old cached shell.
 
 ## Install on iPhone
 
@@ -72,6 +72,8 @@ The `.github` folder is essential. It tells GitHub how to preserve the last succ
 
 ## Data-status limitation
 
-GitHub Pages is a static host and cannot run the Windows app's live `/api/*` gateway. The TradingView ticker and charts remain live in the browser, while GitHub Actions refreshes market, news, and calendar snapshots every five minutes and preserves the last successful snapshot if an upstream source temporarily fails. LiqueDT marks these snapshots red rather than pretending they are a continuously live API. Version 1.9 also shows when each snapshot was created, when the source last refreshed successfully, and how old the latest news headline is.
+GitHub Pages is a static host and cannot run the Windows app's live `/api/*` gateway. The TradingView ticker and charts remain live in the browser, while GitHub Actions refreshes market, news, and calendar snapshots every five minutes and preserves the last successful snapshot if an upstream source temporarily fails. LiqueDT marks these snapshots red rather than pretending they are a continuously live API. Version 1.11 also shows when each snapshot was created, when the source last refreshed successfully, how old the latest news headline is, when GitHub last built the static data, rolling cross-market correlation context, and estimated news-impact reasons/confidence.
+
+If the phone is not updating, open `https://YOUR-USERNAME.github.io/LiqueDT/data/status.json`. The `snapshot_generated_at` value should change after each green GitHub Actions run. If it does not change, the issue is the GitHub workflow/deployment, not Safari. In GitHub, check **Actions → Deploy LiqueDT to GitHub Pages** and confirm the latest scheduled or manual run has a green tick.
 
 For continuously live green API status, keep GitHub as the source repository and deploy to a server-capable host such as Cloudflare Pages Functions, Netlify, Vercel, or a VPS.

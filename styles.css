@@ -80,7 +80,7 @@ a { color: inherit; }
 .sg-clock strong { font-size: 13px; color: var(--acid); }
 
 .ticker-shell { height: 47px; overflow: hidden; border-bottom: 1px solid var(--line); background: #0e151c; }
-.ticker-track { width: 200%; height: 46px; display: flex; will-change: transform; animation: ticker-scroll 26s linear infinite; }
+.ticker-track { width: 200%; height: 46px; display: flex; will-change: transform; animation: ticker-scroll 18s linear infinite; }
 .ticker-widget { width: 50%; min-width: 50%; height: 46px; overflow: hidden; }
 .ticker-widget > div { height: 46px; }
 .ticker-shell:hover .ticker-track { animation-play-state: paused; }
@@ -191,6 +191,9 @@ main, footer { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
 .driver-card h3 { margin: 15px 0 5px; font-size: 15px; font-weight: 500; }
 .driver-card p { flex: 1; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
 .driver-market-read { margin: 8px 0 7px; color: var(--muted); font: 500 8px/1.35 var(--mono); }
+.driver-market-read strong, .driver-market-read small { display: block; }
+.driver-market-read strong { font-weight: 600; }
+.driver-market-read small { margin-top: 5px; color: #8492a2; font-weight: 400; line-height: 1.35; text-transform: uppercase; }
 .driver-market-read.bullish { color: var(--acid); }
 .driver-market-read.bearish { color: var(--red); }
 .driver-market-read.balanced { color: #b4bfca; }
@@ -221,7 +224,8 @@ main, footer { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
 .impact.high i { background: var(--red); box-shadow: 0 0 8px rgba(240,121,113,.4); }
 .news-item { display: grid; grid-template-columns: auto 1fr; gap: 13px; padding: 16px 0; border-top: 1px solid var(--line); text-decoration: none; }
 .news-item:hover h3 { color: var(--acid); }
-.news-effect { width: 54px; padding-top: 2px; color: var(--muted); font: 500 7px/1 var(--mono); text-transform: uppercase; }
+.news-effect { width: 62px; padding-top: 2px; color: var(--muted); font: 500 7px/1.25 var(--mono); text-transform: uppercase; }
+.news-effect small { display: block; margin-bottom: 4px; color: #647180; font-size: 6px; letter-spacing: .08em; }
 .news-effect::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: #748191; }
 .news-effect.bullish { color: var(--acid); }
 .news-effect.bullish::before { background: var(--acid); }
@@ -229,6 +233,7 @@ main, footer { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
 .news-effect.bearish::before { background: var(--red); }
 .news-copy h3 { margin: 0; color: #dbe3ea; font-size: 10px; font-weight: 500; line-height: 1.45; transition: .18s ease; }
 .news-copy p { display: flex; gap: 7px; margin: 6px 0 0; color: var(--muted); font: 400 7px/1 var(--mono); text-transform: uppercase; }
+.news-copy .news-estimate { display: block; color: #91a0b0; font-size: 7px; line-height: 1.45; }
 .panel-footer { display: flex; justify-content: space-between; gap: 14px; margin-top: 12px; padding-top: 15px; color: #738091; border-top: 1px solid var(--line); font: 400 7px/1 var(--mono); text-transform: uppercase; }
 .panel-footer span:first-child { min-width: 0; line-height: 1.55; }
 .panel-footer a { color: #b0bac5; text-decoration: none; }
@@ -373,6 +378,6 @@ dialog p:not(.eyebrow) { color: #aab5c1; font-size: 11px; line-height: 1.75; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
-  .ticker-track { animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+  .quiet-button.loading svg, .loading-row span { animation: none !important; }
 }
