@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "*/5 * * * *"
+    # Offset away from :00/:05/:10 because GitHub's scheduled queue is busiest at exact 5-minute boundaries.
+    - cron: "2/5 * * * *"
   workflow_dispatch:
 
 permissions:
